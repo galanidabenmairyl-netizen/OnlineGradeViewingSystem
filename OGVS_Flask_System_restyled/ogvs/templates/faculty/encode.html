@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Encode Grades{% endblock %}
+{% block page_title %}{{ subject.code }} — {{ subject.name }}{% endblock %}
+{% block page_subtitle %}{{ section.program }} {{ section.year_level }}-{{ section.section_name }} · {{ offering.semester }}, {{ offering.school_year }}{% endblock %}
+
+{% block topbar_actions %}
+<div style="display:flex; gap:10px;">
+  <form method="POST" action="{{ url_for('faculty.submit_for_review', offering_id=offering.id) }}">
+    <button class="btn btn-outline" type="submit">Submit Drafts for Review</button>
+  </form>
+  <form method="POST" action="{{ url_for('faculty.release', offering_id=offering.id) }}">
+    <button class="btn btn-gold" type="submit">Release Approved Grades</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h3>Class List &amp; Grade Encoding</h3>
+  <p style="color:var(--text-muted); font-size:12.5px; margin-bottom:16px;">
+    Enter college grades per grading period (1.00 is highest, 5.00 is failing), then click Save on that row. Grades save as
+    <span class="badge badge-draft">Draft</span> — use "Submit Drafts for Review" to
+    send them to the Registrar, and "Release Approved Grades" once the Registrar
+    has approved them.
+  </p>
+  <div class="student-qr-scanner">
+    <div class="scanner-heading">
+      <div>
+        <h3>Find student by QR</h3>
+        <p>Scan the student QR code to locate their row in this class.</p>
+      </div>
+      <div class="scanner-actions">
+        <button class="btn btn-outline btn-sm" type="button" id="start-qr-scan">Start camera</button>
+        <button class="btn btn-outline btn-sm" type="button" id="stop-qr-scan" disabled>Stop camera</button>
+      </div>
+    </div>
+    <div id="student-qr-reader" hidden></div>
+    <p id="student-qr-status" class="scanner-status" role="status" aria-live="polite">Camera access is required to scan student QR codes.</p>
+  </div>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Student ID</th><th>Name</th><th>Prelim</th><th>Midterm</th><th>Finals</th>
+        <th>Final</th><th>Remarks</th><th>Status</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr data-student-id="{{ s.student_id }}">
+        <form method="POST" action="{{ url_for('faculty.encode', offering_id=offering.id) }}">
+        <td>{{ s.student_id }}</td>
+        <td>{{ s.full_name }}</td>
+        <input type="hidden" name="student_user_id" value="{{ s.user_id }}">
+        <td><input type="number" step="0.25" min="1" max="5" name="prelim" style="margin-bottom:0; width:70px;"
+              value="{{ s.prelim if s.prelim is not none else '' }}"
+              {% if s.status in ['approved','released'] %}disabled{% endif %}></td>
+        <td><input type="number" step="0.25" min="1" max="5" name="midterm" style="margin-bottom:0; width:70px;"
+              value="{{ s.midterm if s.midterm is not none else '' }}"
+              {% if s.status in ['approved','released'] %}disabled{% endif %}></td>
+        <td><input type="number" step="0.25" min="1" max="5" name="finals" style="margin-bottom:0; width:70px;"
+              value="{{ s.finals if s.finals is not none else '' }}"
+              {% if s.status in ['approved','released'] %}disabled{% endif %}></td>
+        <td><strong>{{ s.final_grade if s.final_grade is not none else "—" }}</strong></td>
+        <td>{% if s.remarks %}<span class="badge badge-{{ 'passed' if s.remarks == 'Passed' else ('failed' if s.remarks == 'Failed' else 'incomplete') }}">{{ s.remarks }}</span>{% else %}—{% endif %}</td>
+        <td><span class="badge badge-{{ s.status or 'draft' }}">{{ (s.status or 'not started')|capitalize }}</span></td>
+        <td>
+          {% if s.status in ['approved','released'] %}
+            <span style="color:#6597EC; font-size:12px;">Locked</span>
+          {% else %}
+            <button class="btn btn-primary btn-sm" type="submit">Save</button>
+          {% endif %}
+        </td>
+        </form>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Request a Correction on a Released Grade</h3>
+  <p style="color:var(--text-muted); font-size:12.5px;">
+    Released grades are locked. If a released grade needs to change, file a
+    correction request with a reason — the Registrar will review it.
+  </p>
+  {% set released_students = students|selectattr('status', 'equalto', 'released')|list %}
+  {% if released_students %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Student</th><th>Final Grade</th><th>Reason for Correction</th><th></th></tr></thead>
+    <tbody>
+      {% for s in released_students %}
+      <tr>
+        <td>{{ s.full_name }}</td>
+        <td>{{ s.final_grade }}</td>
+        <form method="POST" action="{{ url_for('faculty.request_correction', grade_id=s.grade_id) }}">
+        <td><input type="text" name="reason" placeholder="e.g. Finals score was recorded incorrectly" style="margin-bottom:0;" required></td>
+        <td><button class="btn btn-outline btn-sm" type="submit">Request</button></td>
+        </form>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No released grades in this class yet.</div>
+  {% endif %}
+</div>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script>
+    const startScanButton = document.getElementById('start-qr-scan');
+    const stopScanButton = document.getElementById('stop-qr-scan');
+    const scannerElement = document.getElementById('student-qr-reader');
+    const scannerStatus = document.getElementById('student-qr-status');
+    let qrScanner = null;
+
+    function showScannedStudent(decodedText) {
+      const scannedId = decodedText.trim().replace(/^OGVS-STUDENT:/i, '');
+      const rows = [...document.querySelectorAll('tr[data-student-id]')];
+      const row = rows.find((item) => item.dataset.studentId === scannedId);
+      document.querySelectorAll('tr.scanned-student').forEach((item) => item.classList.remove('scanned-student'));
+      if (!row) {
+        scannerStatus.textContent = `Student ${scannedId} is not enrolled in this class.`;
+        return;
+      }
+      row.classList.add('scanned-student');
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const firstEditableGrade = row.querySelector('input[type="number"]:not(:disabled)');
+      if (firstEditableGrade) firstEditableGrade.focus({ preventScroll: true });
+      scannerStatus.textContent = `Found ${row.cells[1].textContent.trim()} (${scannedId}). Review the row before saving.`;
+    }
+
+    async function stopQrScanner() {
+      if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
+      scannerElement.hidden = true;
+      startScanButton.disabled = false;
+      stopScanButton.disabled = true;
+    }
+
+    startScanButton.addEventListener('click', async () => {
+      if (!window.Html5Qrcode) {
+        scannerStatus.textContent = 'QR scanner could not load. Check your internet connection and reload the page.';
+        return;
+      }
+      try {
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras.length) throw new Error('No camera was found on this device.');
+        const camera = cameras.find((item) => /back|rear|environment/i.test(item.label)) || cameras[0];
+        scannerElement.hidden = false;
+        qrScanner = new Html5Qrcode('student-qr-reader');
+        await qrScanner.start(camera.id, { fps: 10, qrbox: { width: 240, height: 240 } }, async (decodedText) => {
+          await stopQrScanner();
+          showScannedStudent(decodedText);
+        });
+        startScanButton.disabled = true;
+        stopScanButton.disabled = false;
+        scannerStatus.textContent = 'Camera active. Hold the student QR code inside the scan frame.';
+      } catch (error) {
+        scannerElement.hidden = true;
+        scannerStatus.textContent = error.message || 'Could not start the camera. Allow camera access and try again.';
+      }
+    });
+
+    stopScanButton.addEventListener('click', async () => {
+      try {
+        await stopQrScanner();
+        scannerStatus.textContent = 'Camera stopped.';
+      } catch (error) {
+        scannerStatus.textContent = 'Could not stop the camera cleanly. Reload the page to release it.';
+      }
+    });
+  </script>
+{% endblock %}

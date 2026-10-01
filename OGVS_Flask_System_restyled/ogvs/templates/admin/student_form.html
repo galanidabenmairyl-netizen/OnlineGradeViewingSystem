@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Add' if mode == 'new' else 'Edit' }} Student{% endblock %}
+{% block page_title %}{{ 'Add Student Record' if mode == 'new' else 'Edit Student Record' }}{% endblock %}
+{% block page_subtitle %}{% if mode == 'new' %}Pre-load an enrollment record so the student can self-register{% else %}Update this student's enrollment details{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:520px;">
+  <form method="POST">
+    <label for="student_id">Student ID</label>
+    <input type="text" id="student_id" name="student_id" placeholder="e.g. 2023-00789"
+      value="{{ record.student_id if record else '' }}" {% if mode == 'edit' %}readonly{% endif %} required>
+
+    <label for="full_name">Full Name</label>
+    <input type="text" id="full_name" name="full_name" value="{{ record.full_name if record else '' }}" required>
+
+    <div class="form-row">
+      <div>
+        <label for="program">Program</label>
+        <input type="text" id="program" name="program" value="{{ record.program if record else 'BSIT' }}" required>
+      </div>
+      <div>
+        <label for="year_level">Year Level</label>
+        <input type="text" id="year_level" name="year_level" value="{{ record.year_level if record else '3rd Year' }}" required>
+      </div>
+    </div>
+
+    <label for="section">Section</label>
+    <input type="text" id="section" name="section" value="{{ record.section if record else 'A' }}" required>
+
+    <button class="btn btn-primary" type="submit">{{ 'Add Record' if mode == 'new' else 'Save Changes' }}</button>
+    <a class="btn btn-outline" href="{{ url_for('admin.students') }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

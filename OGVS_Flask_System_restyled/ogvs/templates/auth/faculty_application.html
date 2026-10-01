@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculty Application — OGVS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='9') }}">
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-brand">
+    <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="NEMSU logo">
+    <h1>NEMSU Cantilan</h1>
+    <div class="tagline">Faculty verification</div>
+    <p>Submit your employee ID and official NEMSU email. The Registrar will verify your faculty record before activating access.</p>
+  </div>
+  <div class="auth-form">
+    <div class="auth-form-inner">
+      <div class="auth-heading">
+        <span class="auth-kicker">Faculty access</span>
+        <h2>Faculty application</h2>
+        <p>Submit your details for Registrar verification.</p>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      <form method="POST" class="login-form">
+        <label for="employee_id">Employee ID</label>
+        <input type="text" id="employee_id" name="employee_id" value="{{ form.get('employee_id','') }}" autocomplete="off" required>
+        <label for="full_name">Full Name</label>
+        <input type="text" id="full_name" name="full_name" value="{{ form.get('full_name','') }}" autocomplete="name" required>
+        <label for="position">Position / Designation</label>
+        <input type="text" id="position" name="position" value="{{ form.get('position','Faculty') }}" required>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" value="{{ form.get('username','') }}" autocomplete="username" required>
+        <label for="email">Official NEMSU Email</label>
+        <input type="email" id="email" name="email" placeholder="name@nemsu.edu.ph" pattern="[A-Za-z0-9._%+-]+@nemsu\.edu\.ph" autocomplete="email" required>
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input type="password" id="password" name="password" autocomplete="new-password" required>
+          <button type="button" class="password-toggle" data-target="password" aria-label="Show password" aria-pressed="false">Show</button>
+        </div>
+        <label for="confirm_password">Confirm Password</label>
+        <div class="password-field">
+          <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required>
+          <button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password" aria-pressed="false">Show</button>
+        </div>
+        <button class="btn btn-primary login-submit" type="submit">Submit application</button>
+      </form>
+      <div class="auth-switch">Already approved? <a href="{{ url_for('auth.login') }}">Log in</a></div>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.password-toggle').forEach((toggle) => {
+    toggle.addEventListener('click', () => {
+      const input = document.getElementById(toggle.dataset.target);
+      const isVisible = input.type === 'text';
+      input.type = isVisible ? 'password' : 'text';
+      toggle.textContent = isVisible ? 'Show' : 'Hide';
+      toggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+      toggle.setAttribute('aria-pressed', String(!isVisible));
+    });
+  });
+</script>
+<script src="{{ url_for('static', filename='js/cursor-effect.js', v='2') }}" defer></script>
+</body>
+</html>

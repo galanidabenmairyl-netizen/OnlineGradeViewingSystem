@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}Grade releases, deadlines, and announcements{% endblock %}
+
+{% block content %}
+<div class="card">
+  {% if rows %}
+  {% for n in rows %}
+  <div style="padding:12px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; gap:16px;">
+    <div>{{ n.message }}</div>
+    <div style="color:var(--text-muted); font-size:12px; white-space:nowrap;">{{ n.created_at }}</div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">No notifications yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

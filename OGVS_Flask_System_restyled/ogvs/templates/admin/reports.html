@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Records Archive{% endblock %}
+{% block page_subtitle %}Consolidated grade reports by program, year level, or section{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form method="get" style="display:flex; gap:12px; align-items:flex-end;">
+    <div>
+      <label for="program">Program</label>
+      <select id="program" name="program">
+        <option value="">All Programs</option>
+        {% for p in programs %}
+        <option value="{{ p }}" {% if p == program %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="year_level">Year Level</label>
+      <select id="year_level" name="year_level">
+        <option value="">All Year Levels</option>
+        {% for y in year_levels %}
+        <option value="{{ y }}" {% if y == year_level %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-outline" type="submit">Filter</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Consolidated Grade Report</h3>
+  {% if rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Student ID</th><th>Name</th><th>Program</th><th>Y&amp;S</th><th>Subject</th><th>Term</th><th>Final</th><th>Remarks</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.student_id }}</td>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.program }}</td>
+        <td>{{ r.year_level }}-{{ r.section }}</td>
+        <td>{{ r.code }} — {{ r.name }}</td>
+        <td>{{ r.semester }}, {{ r.school_year }}</td>
+        <td>{{ r.final_grade if r.final_grade is not none else "—" }}</td>
+        <td>{% if r.remarks %}<span class="badge badge-{{ 'passed' if r.remarks == 'Passed' else ('failed' if r.remarks == 'Failed' else 'incomplete') }}">{{ r.remarks }}</span>{% else %}<span class="badge badge-incomplete">Not released</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No records match this filter.</div>
+  {% endif %}
+</div>
+{% endblock %}

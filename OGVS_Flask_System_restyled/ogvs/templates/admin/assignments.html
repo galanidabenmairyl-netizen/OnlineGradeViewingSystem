@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Assignments{% endblock %}
+{% block page_title %}Faculty & Subject Assignments{% endblock %}
+{% block page_subtitle %}Assign an instructor to a subject-section per semester{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h3>New Assignment</h3>
+  <form method="POST">
+    <div class="form-row">
+      <div>
+        <label for="subject_id">Subject</label>
+        <select id="subject_id" name="subject_id" required>
+          {% for s in subjects %}
+          <option value="{{ s.id }}">{{ s.code }} — {{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="section_id">Section</label>
+        <select id="section_id" name="section_id" required>
+          {% for s in sections %}
+          <option value="{{ s.id }}">{{ s.program }} {{ s.year_level }}-{{ s.section_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label for="faculty_user_id">Instructor</label>
+        <select id="faculty_user_id" name="faculty_user_id" required>
+          {% for f in faculty %}
+          <option value="{{ f.user_id }}">{{ f.full_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="semester">Semester</label>
+        <select id="semester" name="semester" required>
+          <option>1st Semester</option>
+          <option>2nd Semester</option>
+          <option>Summer</option>
+        </select>
+      </div>
+    </div>
+    <label for="school_year">School Year</label>
+    <input type="text" id="school_year" name="school_year" placeholder="e.g. 2026-2027" required>
+
+    <div class="form-row">
+      <div>
+        <label for="meeting_time">Time</label>
+        <input type="text" id="meeting_time" name="meeting_time" placeholder="e.g. 1:00-2:30" required>
+      </div>
+      <div>
+        <label for="meeting_days">Days</label>
+        <input type="text" id="meeting_days" name="meeting_days" placeholder="e.g. MTH" required>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Assign & Auto-Enroll Section</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Current Offerings</h3>
+  {% if offerings %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Code</th><th>Subject</th><th>Section</th><th>Instructor</th><th>Schedule</th><th>Term</th><th>Enrolled</th></tr></thead>
+    <tbody>
+      {% for o in offerings %}
+      <tr>
+        <td>{{ o.code }}</td>
+        <td>{{ o.name }}</td>
+        <td>{{ o.program }} {{ o.year_level }}-{{ o.section_name }}</td>
+        <td>{{ o.instructor or "Unassigned" }}</td>
+        <td>{{ o.meeting_time }} · {{ o.meeting_days }}</td>
+        <td>{{ o.semester }}, {{ o.school_year }}</td>
+        <td>{{ o.enrolled }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No class offerings yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

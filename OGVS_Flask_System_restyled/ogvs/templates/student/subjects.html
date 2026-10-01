@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}My Subjects{% endblock %}
+{% block page_title %}Subjects & Instructors{% endblock %}
+{% block page_subtitle %}{% if current %}{{ current[0] }}, {{ current[1] }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+  {% if rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Code</th><th>Subject</th><th>Units</th><th>Instructor</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.code }}</td>
+        <td>{{ r.name }}</td>
+        <td>{{ r.units }}</td>
+        <td>{{ r.instructor or "To be assigned" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No subjects enrolled for the current semester.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — OGVS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='9') }}">
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-brand">
+    <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="NEMSU logo">
+    <h1>NEMSU Cantilan</h1>
+    <div class="tagline">Every grade, one login away.</div>
+    <p>Online Grade Viewing System for NEMSU Cantilan Campus — a single, secure
+    portal for students, faculty, and the Registrar's Office to manage and view
+    academic grades every semester.</p>
+
+    <div class="auth-facebook">
+      <span>Registrar inquiries?</span>
+      <a href="https://www.facebook.com/nemsucantilanregistrar/" target="_blank" rel="noopener noreferrer">
+        <span class="facebook-logo" aria-hidden="true">f</span>
+        <span>Visit NEMSU Cantilan Registrar on Facebook</span>
+      </a>
+    </div>
+
+    <div class="login-qr">
+      <img src="{{ login_qr }}" alt="QR code to open OGVS">
+    </div>
+  </div>
+  <div class="auth-form">
+    <div class="auth-form-inner">
+      <div class="auth-heading">
+        <span class="auth-kicker">Online Grade Viewing System</span>
+        <h2>Welcome back</h2>
+        <p>Sign in to access your academic records.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" class="login-form">
+        <label for="username">Username / Student ID</label>
+        <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+          <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false"><span aria-hidden="true">&#128065;</span> Show</button>
+        </div>
+        <button type="submit" class="btn btn-primary login-submit">Log In</button>
+      </form>
+
+      <div class="auth-switch">
+        New student? <a href="{{ url_for('auth.register') }}">Register here</a>
+      </div>
+      <div class="auth-switch">
+        New faculty? <a href="{{ url_for('auth.faculty_application') }}">Apply for verification</a>
+      </div>
+
+      <details class="demo-box">
+        <summary>Demo access</summary>
+        <span>Admin: registrar</span>
+        <span>Faculty: jdelacruz</span>
+        <span>Student: 2023-00123</span>
+      </details>
+    </div>
+  </div>
+</div>
+<script>
+  const passwordInput = document.getElementById('password');
+  const passwordToggle = document.querySelector('.password-toggle');
+
+  passwordToggle.addEventListener('click', () => {
+    const isVisible = passwordInput.type === 'text';
+    passwordInput.type = isVisible ? 'password' : 'text';
+    passwordToggle.textContent = isVisible ? 'Show' : 'Hide';
+    passwordToggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+    passwordToggle.setAttribute('aria-pressed', String(!isVisible));
+  });
+</script>
+<script src="{{ url_for('static', filename='js/cursor-effect.js', v='2') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}My Grades{% endblock %}
+{% block page_title %}My Grades{% endblock %}
+{% block page_subtitle %}View grades per subject and grading period{% endblock %}
+
+{% block topbar_actions %}
+{% if current[0] %}
+<a class="btn btn-gold" href="{{ url_for('student.grade_slip', school_year=current[1], semester=current[0]) }}">Export Grade Slip (PDF)</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div style="max-width:320px;">
+    <label for="term">Select term</label>
+    <select id="term" style="margin-bottom:0;">
+      {% for sem, sy in terms %}
+      <option value="{{ sem }}|{{ sy }}" {% if current[0]==sem and current[1]==sy %}selected{% endif %}>
+        {{ sem }}, {{ sy }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="card">
+  <h3>{{ current[0] }}, {{ current[1] }}</h3>
+  {% if rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Code</th><th>Subject</th><th>Instructor</th><th>Time</th><th>Days</th><th>Prelim</th><th>Midterm</th><th>Finals</th><th>Final Grade</th><th>Remarks</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.code }}</td>
+        <td>{{ r.name }}</td>
+        <td>{{ r.instructor or "—" }}</td>
+        <td>{{ r.meeting_time or "—" }}</td>
+        <td>{{ r.meeting_days or "—" }}</td>
+        {% if r.status == 'released' %}
+        <td>{{ r.prelim if r.prelim is not none else "—" }}</td>
+        <td>{{ r.midterm if r.midterm is not none else "—" }}</td>
+        <td>{{ r.finals if r.finals is not none else "—" }}</td>
+        <td><strong>{{ r.final_grade }}</strong></td>
+        <td><span class="badge badge-{{ 'passed' if r.remarks == 'Passed' else 'failed' }}">{{ r.remarks }}</span></td>
+        {% else %}
+        <td colspan="4" style="color:#6597EC;">Not yet released by the instructor</td>
+        <td><span class="badge badge-incomplete">Pending</span></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No grade records for this term.</div>
+  {% endif %}
+</div>
+
+<script>
+document.getElementById('term').addEventListener('change', function() {
+  const [sem, sy] = this.value.split('|');
+  window.location.href = "{{ url_for('student.grades') }}?semester=" + encodeURIComponent(sem) + "&school_year=" + encodeURIComponent(sy);
+});
+</script>
+{% endblock %}

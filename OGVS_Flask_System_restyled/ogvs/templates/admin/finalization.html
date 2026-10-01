@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Grade Finalization{% endblock %}
+{% block page_title %}Grade Finalization{% endblock %}
+{% block page_subtitle %}Review submitted grades and pending correction requests{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h3>Grades Submitted for Review</h3>
+  {% if submitted %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Student</th><th>Subject</th><th>Instructor</th><th>Term</th><th>Final</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>
+      {% for g in submitted %}
+      <tr>
+        <td>{{ g.student_name }} <span style="color:var(--text-muted); font-size:11px;">({{ g.student_id }})</span></td>
+        <td>{{ g.code }} — {{ g.name }}</td>
+        <td>{{ g.instructor or "—" }}</td>
+        <td>{{ g.semester }}, {{ g.school_year }}</td>
+        <td>{{ g.final_grade if g.final_grade is not none else "—" }}</td>
+        <td>{% if g.remarks %}<span class="badge badge-{{ 'passed' if g.remarks == 'Passed' else ('failed' if g.remarks == 'Failed' else 'incomplete') }}">{{ g.remarks }}</span>{% else %}—{% endif %}</td>
+        <td style="display:flex; gap:8px;">
+          <form method="POST" action="{{ url_for('admin.approve_grade', grade_id=g.id) }}">
+            <button class="btn btn-primary btn-sm" type="submit">Approve</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.return_grade', grade_id=g.id) }}">
+            <button class="btn btn-outline btn-sm" type="submit">Return</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No grades pending review.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Pending Correction Requests</h3>
+  {% if corrections %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Student</th><th>Subject</th><th>Current Grade</th><th>Reason</th><th></th></tr></thead>
+    <tbody>
+      {% for c in corrections %}
+      <tr>
+        <td>{{ c.student_name }} <span style="color:var(--text-muted); font-size:11px;">({{ c.student_id }})</span></td>
+        <td>{{ c.code }} — {{ c.name }}</td>
+        <td>{{ c.final_grade }} ({{ c.remarks }})</td>
+        <td>{{ c.reason }}</td>
+        <td style="display:flex; gap:8px;">
+          <form method="POST" action="{{ url_for('admin.approve_correction', cr_id=c.id) }}">
+            <button class="btn btn-primary btn-sm" type="submit">Approve</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.return_correction', cr_id=c.id) }}">
+            <button class="btn btn-outline btn-sm" type="submit">Deny</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No pending correction requests.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Faculty{% endblock %}
+{% block page_title %}Manage Faculty{% endblock %}
+{% block page_subtitle %}Faculty accounts and their status{% endblock %}
+{% block topbar_actions %}<a class="btn btn-primary" href="{{ url_for('admin.new_faculty') }}">+ Add Faculty Account</a>{% endblock %}
+
+{% block content %}
+<div class="card">
+  {% if rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Username</th><th>Name</th><th>Employee ID</th><th>Email</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.username }}</td>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.employee_id or "—" }}</td>
+        <td>{{ r.email }}</td>
+        <td><span class="badge badge-{{ 'approved-status' if r.verification_status == 'approved' else 'pending' }}">{{ r.verification_status|capitalize }}</span></td>
+        <td>
+          {% if r.verification_status == 'pending' %}
+          <form method="POST" action="{{ url_for('admin.approve_faculty', user_id=r.user_id) }}">
+            <button class="btn btn-gold btn-sm" type="submit">Verify &amp; Activate</button>
+          </form>
+          {% else %}
+          <form method="POST" action="{{ url_for('admin.toggle_faculty', user_id=r.user_id) }}">
+            <button class="btn btn-outline btn-sm" type="submit">{{ 'Deactivate' if r.is_active else 'Activate' }}</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No faculty accounts yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

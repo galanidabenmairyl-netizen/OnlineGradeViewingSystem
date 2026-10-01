@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Grade History{% endblock %}
+{% block page_title %}Grade History{% endblock %}
+{% block page_subtitle %}Past semesters, organized by academic year and term{% endblock %}
+
+{% block content %}
+{% if history %}
+  {% for term in history %}
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h3 style="margin:0;">{{ term.semester }}, {{ term.school_year }}</h3>
+      <div>
+        <span class="badge badge-approved" style="margin-right:10px;">GWA: {{ term.gwa if term.gwa is not none else "—" }}</span>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('student.grade_slip', school_year=term.school_year, semester=term.semester) }}">Export PDF</a>
+      </div>
+    </div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>Subject</th><th>Units</th><th>Final Grade</th><th>Remarks</th></tr></thead>
+      <tbody>
+        {% for r in term.rows %}
+        <tr>
+          <td>{{ r.code }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.units }}</td>
+          <td>{{ r.final_grade if r.status == 'released' else "—" }}</td>
+          <td>{% if r.status == 'released' %}
+                <span class="badge badge-{{ 'passed' if r.remarks == 'Passed' else 'failed' }}">{{ r.remarks }}</span>
+              {% else %}<span class="badge badge-incomplete">Pending</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card"><div class="empty-state">No academic history on record yet.</div></div>
+{% endif %}
+{% endblock %}

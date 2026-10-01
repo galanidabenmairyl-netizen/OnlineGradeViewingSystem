@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}OGVS{% endblock %} — NEMSU Cantilan</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='9') }}">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="NEMSU logo">
+      <div class="brand-text">
+        <span>NEMSU CANTILAN</span>
+      </div>
+    </div>
+    <nav>
+      {% if current_role == 'student' %}
+        <a href="{{ url_for('student.dashboard') }}" class="{{ 'active' if request.endpoint == 'student.dashboard' }}"><span class="icon">&#9737;</span> Dashboard</a>
+        <a href="{{ url_for('student.grades') }}" class="{{ 'active' if request.endpoint == 'student.grades' }}"><span class="icon">&#128209;</span> My Grades</a>
+        <a href="{{ url_for('student.history') }}" class="{{ 'active' if request.endpoint == 'student.history' }}"><span class="icon">&#128340;</span> Grade History</a>
+        <a href="{{ url_for('student.subjects') }}" class="{{ 'active' if request.endpoint == 'student.subjects' }}"><span class="icon">&#128218;</span> Subjects</a>
+        <a href="{{ url_for('student.notifications') }}" class="{{ 'active' if request.endpoint == 'student.notifications' }}"><span class="icon">&#128276;</span> Notifications</a>
+      {% elif current_role == 'faculty' %}
+        <a href="{{ url_for('faculty.dashboard') }}" class="{{ 'active' if request.endpoint == 'faculty.dashboard' }}"><span class="icon">&#9737;</span> Dashboard</a>
+        <a href="{{ url_for('faculty.classes') }}" class="{{ 'active' if request.endpoint in ['faculty.classes','faculty.encode'] }}"><span class="icon">&#127891;</span> My Classes</a>
+        <a href="{{ url_for('faculty.notifications') }}" class="{{ 'active' if request.endpoint == 'faculty.notifications' }}"><span class="icon">&#128276;</span> Notifications</a>
+      {% elif current_role == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' }}"><span class="icon">&#9737;</span> Dashboard</a>
+        <a href="{{ url_for('admin.students') }}" class="{{ 'active' if request.endpoint in ['admin.students','admin.new_student','admin.edit_student'] }}"><span class="icon">&#128101;</span> Students</a>
+        <a href="{{ url_for('admin.faculty_list') }}" class="{{ 'active' if request.endpoint in ['admin.faculty_list','admin.new_faculty'] }}"><span class="icon">&#127891;</span> Faculty</a>
+        <a href="{{ url_for('admin.assignments') }}" class="{{ 'active' if request.endpoint == 'admin.assignments' }}"><span class="icon">&#128203;</span> Assignments</a>
+        <a href="{{ url_for('admin.finalization') }}" class="{{ 'active' if request.endpoint == 'admin.finalization' }}"><span class="icon">&#9989;</span> Grade Finalization</a>
+        <a href="{{ url_for('admin.reports') }}" class="{{ 'active' if request.endpoint == 'admin.reports' }}"><span class="icon">&#128202;</span> Reports</a>
+      {% endif %}
+    </nav>
+    {% if current_username %}
+    <div class="user-box">
+      <span class="who">{{ 'REGISTRAR' if current_role == 'admin' else current_username|upper }}</span>
+      <span class="role-tag">{{ current_role }}</span><br>
+      <a class="logout-btn" href="{{ url_for('auth.logout') }}">Log out</a>
+    </div>
+    {% endif %}
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>{% block page_title %}{% endblock %}</h1>
+        <div class="subtitle">{% block page_subtitle %}{% endblock %}</div>
+      </div>
+      {% block topbar_actions %}{% endblock %}
+    </div>
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/cursor-effect.js', v='2') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Faculty Dashboard{% endblock %}
+{% block page_subtitle %}Overview of your assigned classes{% endblock %}
+
+{% block content %}
+<div class="card student-profile-card">
+  <div class="profile-summary">
+    <label class="profile-avatar-upload" for="profile_image" title="Change profile picture">
+      {% if faculty.profile_image %}
+        <img class="profile-avatar" src="{{ url_for('static', filename='uploads/profiles/' ~ faculty.profile_image) }}" alt="Profile picture">
+      {% else %}
+        <span class="profile-avatar profile-avatar-placeholder">{{ faculty.full_name[0]|upper }}</span>
+      {% endif %}
+      <span class="profile-avatar-overlay">Change</span>
+    </label>
+    <div>
+      <h3>{{ faculty.full_name }}</h3>
+      <p>{{ faculty.position }}</p>
+      <p>Employee ID: {{ faculty.employee_id or "Not assigned" }}</p>
+      <p>{{ faculty.email or "No email on file" }}</p>
+    </div>
+  </div>
+  <form class="profile-upload" method="POST" action="{{ url_for('faculty.update_profile') }}" enctype="multipart/form-data">
+    <input class="profile-image-input" type="file" id="profile_image" name="profile_image"
+           accept=".jpg,.jpeg,.png,.webp" onchange="this.form.submit()" required>
+  </form>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="value">{{ offerings|length }}</div><div class="label">Classes Assigned</div></div>
+  <div class="stat-card"><div class="value">{{ pending_corrections }}</div><div class="label">Pending Corrections</div></div>
+  <div class="stat-card"><div class="value">{{ unread }}</div><div class="label">Unread Notifications</div></div>
+</div>
+
+<div class="card">
+  <h3>My Classes</h3>
+  {% if offerings %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Code</th><th>Subject</th><th>Section</th><th>Term</th><th>Enrolled</th><th></th></tr></thead>
+    <tbody>
+      {% for o in offerings %}
+      <tr>
+        <td>{{ o.code }}</td>
+        <td>{{ o.name }}</td>
+        <td>{{ o.program }} {{ o.year_level }}-{{ o.section_name }}</td>
+        <td>{{ o.semester }}, {{ o.school_year }}</td>
+        <td>{{ o.enrolled }}</td>
+        <td><a class="btn btn-outline btn-sm" href="{{ url_for('faculty.encode', offering_id=o.id) }}">Encode Grades</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No classes assigned yet. Coordinate with the Registrar's Office.</div>
+  {% endif %}
+</div>
+{% endblock %}

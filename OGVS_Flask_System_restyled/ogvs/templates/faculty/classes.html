@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Classes{% endblock %}
+{% block page_title %}My Classes{% endblock %}
+{% block page_subtitle %}All subject-sections assigned to you{% endblock %}
+
+{% block content %}
+<div class="card">
+  {% if offerings %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Code</th><th>Subject</th><th>Section</th><th>Term</th><th>Enrolled</th><th></th></tr></thead>
+    <tbody>
+      {% for o in offerings %}
+      <tr>
+        <td>{{ o.code }}</td>
+        <td>{{ o.name }}</td>
+        <td>{{ o.program }} {{ o.year_level }}-{{ o.section_name }}</td>
+        <td>{{ o.semester }}, {{ o.school_year }}</td>
+        <td>{{ o.enrolled }}</td>
+        <td><a class="btn btn-outline btn-sm" href="{{ url_for('faculty.encode', offering_id=o.id) }}">Open Class</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No classes assigned yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

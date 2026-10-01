@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Manage Students{% endblock %}
+{% block page_subtitle %}Grouped by program, year level, and section{% endblock %}
+{% block topbar_actions %}<a class="btn btn-primary" href="{{ url_for('admin.new_student') }}">+ Add Student Record</a>{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form method="get" style="display:flex; gap:10px; margin-bottom:0;">
+    <input type="text" name="q" placeholder="Search by name or Student ID" value="{{ q }}" style="margin-bottom:0;">
+    <button class="btn btn-outline" type="submit">Search</button>
+  </form>
+</div>
+
+<div class="card">
+  {% if rows %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Student ID</th><th>Name</th><th>Program</th><th>Year</th><th>Section</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.student_id }}</td>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.program }}</td>
+        <td>{{ r.year_level }}</td>
+        <td>{{ r.section }}</td>
+        <td style="display:flex; gap:8px;">
+          <a class="btn btn-outline btn-sm" href="{{ url_for('admin.edit_student', student_id=r.student_id) }}">Edit</a>
+          <form method="POST" action="{{ url_for('admin.toggle_student', student_id=r.student_id) }}">
+            <button class="btn btn-danger btn-sm" type="submit">Deactivate/Reactivate</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No student records found.</div>
+  {% endif %}
+</div>
+{% endblock %}

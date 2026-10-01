@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Registrar Dashboard{% endblock %}
+{% block page_subtitle %}NEMSU Cantilan Campus — system-wide overview{% endblock %}
+
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card"><div class="value">{{ counts.students }}</div><div class="label">Registered Students</div></div>
+  <div class="stat-card"><div class="value">{{ counts.faculty }}</div><div class="label">Faculty Accounts</div></div>
+  <div class="stat-card"><div class="value">{{ counts.subjects }}</div><div class="label">Subjects</div></div>
+  <div class="stat-card"><div class="value">{{ counts.offerings }}</div><div class="label">Class Offerings</div></div>
+  <div class="stat-card" style="border-left-color:#6597EC;"><div class="value">{{ counts.submitted }}</div><div class="label">Grades Awaiting Review</div></div>
+  <div class="stat-card" style="border-left-color:#185CD2;"><div class="value">{{ counts.pending_corrections }}</div><div class="label">Pending Correction Requests</div></div>
+</div>
+
+{% endblock %}
