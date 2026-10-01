@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from database import get_db
 from utils.decorators import role_required
 from utils.grading import compute_gwa
+from utils.notifications import mark_notifications_read
 from utils.pdf import build_grade_slip_pdf
 from utils.qr import qr_data_uri
 
@@ -189,9 +190,7 @@ def notifications():
         "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC",
         (session["user_id"],),
     ).fetchall()
-    conn.execute(
-        "UPDATE notifications SET is_read = 1 WHERE user_id = ?", (session["user_id"],)
-    )
-    conn.commit()
+    if not mark_notifications_read(conn, session["user_id"]):
+        flash("Notifications were displayed, but this deployment could not save their read status.", "warning")
     conn.close()
     return render_template("student/notifications.html", rows=rows)
